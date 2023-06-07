@@ -1,5 +1,9 @@
 # ioBuilders Bank
 
+## Run Intructions
+
+This is a self contained maven & spring-boot project with no external dependencies so to run it, just run the command "mvn spring-boot:run" from the boot module and it should start properly.
+
 ## API
 
 The interface provided by the service is a REST API. The operations are as follows:
