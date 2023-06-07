@@ -1,0 +1,325 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: API of the ioBuilders Bank
+  description: API that manages the information relative to the ioBuilders bank.
+tags:
+  - name: Users
+    description: Operations on users´s information.
+  - name: Wallets
+    description: Operations on wallet´s information.
+paths:
+  /api/v1/users:
+    post:
+      summary: Sign up of users
+      operationId: signUpUser
+      tags:
+        - Users
+      requestBody:
+        description: Information about the user that is going to be signed up.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserSignUpRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserInformation'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  /api/v1/users/{user_id}:
+    get:
+      summary: Retrieve information of an user by its ID.
+      operationId: findUserById
+      tags:
+        - Users
+      parameters:
+        - $ref: '#/components/parameters/user_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/UserInformation'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  '/api/v1/wallet':
+    post:
+      summary: Creation of a new wallet
+      operationId: createWallet
+      tags:
+        - Wallets
+      requestBody:
+        description: Information about the wallet that is going to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WalletCreationRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/WalletInformation'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  '/api/v1/wallet/{wallet_id}':
+    get:
+      summary: Retrieve information about the balance and movements of a wallet.
+      operationId: findWalletById
+      tags:
+        - Wallets
+      parameters:
+        - $ref: '#/components/parameters/wallet_id'
+      responses:
+        '200':
+          $ref: '#/components/responses/WalletInformation'
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+  '/api/v1/deposit':
+    post:
+      summary: Makes a new deposit to an existing wallet.
+      operationId: createDeposit
+      tags:
+        - Wallets
+      requestBody:
+        description: Information about the wallet that is going to be created.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositRequest'
+      responses:
+        '200':
+          description: The deposit has been made successfully
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '500':
+          $ref: '#/components/responses/500InternalServerError'
+  /api/v1/transference:
+    post:
+      summary: Creates a new transference between two wallets.
+      operationId: createTransference
+      tags:
+        - Wallets
+      requestBody:
+        description: Information about the transference requested to be made.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: The trasnference has been made successfully
+        '400':
+          $ref: '#/components/responses/400BadRequest'
+        '404':
+          $ref: '#/components/responses/404NotFound'
+        '500':
+          $ref: '#/components/responses/404NotFound'
+components:
+  schemas:
+    UserSignUpRequest:
+      description: Information to create a new user.
+      type: object
+      properties:
+        name:
+          description: The complete name of the user.
+          type: string
+          example: Ronaldo Nazario
+        email:
+          description: Email address of the user.
+          type: string
+          example: ronnie@gmail.com
+        fiscal_address:
+          description: Full name of the fiscal address of the user.
+          type: string
+          example: Fake Street 123
+        nif:
+          description: National identification number of the user.
+          type: string
+          example: 11223344A
+      required:
+        - name
+        - email
+        - fiscal_address
+        - nif
+    UserInformation:
+      description: Information relative to an user
+      allOf:
+        - type: object
+          properties:
+            id:
+              description: Auto-generated unique identifier of the user
+              type: integer
+              format: int64
+              example: 22
+        - $ref: '#/components/schemas/UserSignUpRequest'
+      required:
+        - id
+        - name
+        - email
+        - fiscal_address
+        - nif
+    WalletCreationRequest:
+      description: Information to create a new wallet.
+      type: object
+      properties:
+        owner_id:
+          description: The unique identifier of the user owner of the wallet.
+          type: integer
+          format: int64
+          example: 22
+        balance:
+          description: Initial amount of the wallet.
+          type: number
+          format: double
+          example: 100.00
+      required:
+        - owner_id
+        - balance
+    WalletInformation:
+      description: Information of a wallet.
+      allOf:
+        - type: object
+          properties:
+            id:
+              description: Auto-generated unique identifier of the wallet
+              type: integer
+              format: int64
+              example: 22
+        - $ref: '#/components/schemas/WalletCreationRequest'
+        - type: object
+          properties:
+            movements:
+              type: array
+              items:
+                $ref: '#/components/schemas/TransferRequest'
+      required:
+        - id
+        - owner_id
+        - balance
+        - movements
+    TransferInformation:
+      description: Information about a transference
+      allOf:
+        - $ref: '#/components/schemas/WalletCreationRequest'
+        - type: object
+          properties:
+            created_at:
+              description: Date in which the transfer was made
+              type: string
+              example: ''
+      required:
+        - origin_wallet_id
+        - destination_wallet_id
+        - amount
+    TransferRequest:
+      description: Information about a transference
+      type: object
+      properties:
+        origin_wallet_id:
+          description: Unique identifier of the origin wallet.
+          type: integer
+          format: int64
+          example: 321
+        destination_wallet_id:
+          description: The fiscal name of the destination wallet.
+          type: integer
+          format: int64
+          example: 123
+        amount:
+          description: Amount that is being transferred.
+          type: number
+          format: double
+          example: 100.00
+      required:
+        - origin_wallet_id
+        - destination_wallet_id
+        - amount
+    DepositRequest:
+      description: Information about a deposit.
+      type: object
+      properties:
+        destination_wallet_id:
+          description: The fiscal name of the destination wallet.
+          type: integer
+          format: int64
+          example: 123
+        amount:
+          description: Amount that is being deposited.
+          type: number
+          format: double
+          example: 100.00
+      required:
+        - destination_wallet_id
+        - amount
+    Error:
+      description: Information about some error.
+      type: object
+      properties:
+        code:
+          description: Identifier code of the error produced.
+          type: string
+          example: WALLET_NOT_FOUND
+        message:
+          description: Descriptive message of the error produced.
+          type: string
+          example: The wallet with the ID 123 could not be found.
+      required:
+        - code
+        - message
+  responses:
+    400BadRequest:
+      description: Bad Request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    404NotFound:
+      description: Not Found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    500InternalServerError:
+      description: Internal Server Error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UserInformation:
+      description: Information about an user.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UserInformation'
+    WalletInformation:
+      description: Information about a wallet.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/WalletInformation'
+  parameters:
+    user_id:
+      in: path
+      name: user_id
+      description: Unique identifier of an user
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 11
+    wallet_id:
+      in: path
+      name: wallet_id
+      description: Unique identifier of a wallet
+      required: true
+      schema:
+        type: integer
+        format: int64
+        example: 22
